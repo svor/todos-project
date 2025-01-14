@@ -20,14 +20,14 @@ type Todo struct {
 func main() {
 	fmt.Println("Hello, World!")
 
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Fatal("Error loading .env file", err)
+	if os.Getenv("ENV") != "production" {
+		err := godotenv.Load(".env")
+		if err != nil {
+			log.Fatal("Error loading .env file", err)
+		}
 	}
 
-	// POSTGRES_URI := os.Getenv("POSTGRES_URI")
-	POSTGRES_URI := "postgresql://user:password@db:5432/todos"
-
+	POSTGRES_URI := os.Getenv("POSTGRES_URI")
 	connection, err := pgx.Connect(context.Background(), POSTGRES_URI)
 	if err != nil {
 		log.Fatal("Error connecting to database", err)
@@ -66,6 +66,10 @@ func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "5000"
+	}
+
+	if os.Getenv("ENV") == "production" {
+		app.Static("/", "./client/dist")
 	}
 
 	log.Fatal(app.Listen("0.0.0.0:" + port))
